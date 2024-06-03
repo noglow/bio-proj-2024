@@ -19,24 +19,32 @@
             padding: 10px 20px;
             margin: 10px;
         }
-        .score {
-            font-size: 24px;
-            margin: 20px;
-        }
         .word-count {
             font-size: 16px;
             margin-top: 20px;
+        }
+        .timer {
+            font-size: 24px;
+            margin: 20px;
+        }
+        .score {
+            display: none;
+        }
+        #instructions {
+            font-size: 18px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Are you an idiot?</h1>
+    <div id="instructions">Instructions: If the word has not yet been shown, press "New." If a word has already been shown before, press "Seen." Good luck!</div>
     <button id="start-btn" onclick="start()">Start</button>
     <div id="word-box"></div>
     <button id="seen-btn" onclick="seenWord()" style="display:none;">Seen</button>
     <button id="new-btn" onclick="newWord()" style="display:none;">New</button>
-    <div class="score">Score: <span id="score">0</span></div>
     <div class="word-count" id="word-count">Words displayed: 0</div>
+    <div class="timer">Time left: <span id="timer">120</span> seconds</div>
     <div id="result" style="display:none;"></div>
 
     <script>
@@ -45,64 +53,59 @@
         let allWords = [];
         let seenWords = new Set();
         let currentWord = '';
-        let score = 0;
-        let foodRight = 0;
-        let othersRight = 0;
+        let foodCorrect = 0;
+        let othersCorrect = 0;
         let wordsDisplayed = 0;
         let foodDisplayed = 0;
         let othersDisplayed = 0;
+        let timerInterval;
+        let timeLeft = 120;
 
         // Permanent word banks
         const permanentFoodWords = ["Tacos", "Burgers", "Fries", "Tempura", "Barbecue", "Sandwich", "Pancakes", "Waffles", "Sushi", "Ramen", "Burrito", "Pasta", "Pizza", "Pudding", "Curry", "Skewers", "Soup", "Bread", "Hotpot", "Watermelon"];
-        const permanentOtherWords = ["Chair", "Table", "Pen", "Board", "Socket", "Glasses", "Shoes", "Clock", "Backpack", "Fan", "Toy", "Computer", "Phone", "Switch", "Lights", "Door", "Wall", "Cotton", "Fishtank", "Refrigerator", "Jump", "Run", "Eat", "Sleep", "Walk", "Playing", "Think", "Reading", "Listening", "Watch", "Multitask", "Hop", "Pushing", "Pull", "Crouching", "Swim", "Mopping", "Birdwatching", "Slap", "Punch", "Paris", "Sydney", "Melbourne", "Malibu", "Arkansas", "Classroom", "School", "Store", "Restaurant", "Berlin", "Bathroom", "Palace", "Room", "Theater", "Park", "Playground", "Beach", "Rooftop", "Hawaii", "Aviary","Hippo", "Lion", "Wolf", "Fox", "Dolphin", "Shark", "Turtle", "Hyena", "Toucans", "Tiger", "Sloth", "Panda", "Snake", "Lizards", "Panther", "Beaver", "Chameleon", "Raccoon", "Giraffe", "Elephant"
-];
+        const permanentOtherWords = ["Chair", "Table", "Pen", "Board", "Socket", "Glasses", "Shoes", "Clock", "Backpack", "Fan", "Toy", "Computer", "Phone", "Switch", "Lights", "Door", "Wall", "Cotton", "Fishtank", "Refrigerator", "Jump", "Run", "Eat", "Sleep", "Walk", "Playing", "Think", "Reading", "Listening", "Watch", "Multitask", "Hop", "Pushing", "Pull", "Crouching", "Swim", "Mopping", "Birdwatching", "Slap", "Punch", "Paris", "Sydney", "Melbourne", "Malibu", "Arkansas", "Classroom", "School", "Store", "Restaurant", "Berlin", "Bathroom", "Palace", "Room", "Theater", "Park", "Playground", "Beach", "Rooftop", "Hawaii", "Aviary","Hippo", "Lion", "Wolf", "Fox", "Dolphin", "Shark", "Turtle", "Hyena", "Toucans", "Tiger", "Sloth", "Panda", "Snake", "Lizards", "Panther", "Beaver", "Chameleon", "Raccoon", "Giraffe", "Elephant"];
 
         function start() {
             foodWords = [...permanentFoodWords];
             otherWords = [...permanentOtherWords];
             allWords = [...foodWords, ...otherWords];
             seenWords.clear();
-            score = 0;
+            foodCorrect = 0;
+            othersCorrect = 0;
             wordsDisplayed = 0;
             foodDisplayed = 0;
             othersDisplayed = 0;
-            document.getElementById('score').innerText = score;
+            timeLeft = 120;
             document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('instructions').style.display = 'none';
             document.getElementById('word-count').innerText = "Words displayed: 0";
             document.getElementById('seen-btn').style.display = 'inline-block';
             document.getElementById('new-btn').style.display = 'inline-block';
+            startTimer();
             showWord();
         }
 
         function showWord() {
-            if (wordsDisplayed < 200) {
+            if (wordsDisplayed < 200 && timeLeft > 0) {
                 wordsDisplayed++;
                 document.getElementById('word-count').innerText = "Words displayed: " + wordsDisplayed;
                 currentWord = allWords[Math.floor(Math.random() * allWords.length)];
                 document.getElementById('word-box').innerText = currentWord;
             } else {
-                document.getElementById('word-box').innerText = "No more words!";
-                document.getElementById('seen-btn').style.display = 'none';
-                document.getElementById('new-btn').style.display = 'none';
-                document.getElementById('result').innerText = "Food: " + foodRight + " / " + foodDisplayed + ", Others: " + othersRight + " / " + othersDisplayed;
-                document.getElementById('result').style.display = 'block';
+                endGame();
             }
         }
 
         function seenWord() {
             if (permanentFoodWords.includes(currentWord)) {
                 foodDisplayed++;
+                if (seenWords.has(currentWord)) {
+                    foodCorrect++;
+                }
             } else if (permanentOtherWords.includes(currentWord)) {
                 othersDisplayed++;
-            }
-
-            if (seenWords.has(currentWord)) {
-                score++;
-                document.getElementById('score').innerText = score;
-                if (permanentFoodWords.includes(currentWord)) {
-                    foodRight++;
-                } else if (permanentOtherWords.includes(currentWord)) {
-                    othersRight++;
+                if (seenWords.has(currentWord)) {
+                    othersCorrect++;
                 }
             }
             seenWords.add(currentWord);
@@ -112,18 +115,39 @@
         function newWord() {
             if (permanentFoodWords.includes(currentWord)) {
                 foodDisplayed++;
+                if (!seenWords.has(currentWord)) {
+                    foodCorrect++;
+                }
             } else if (permanentOtherWords.includes(currentWord)) {
                 othersDisplayed++;
+                if (!seenWords.has(currentWord)) {
+                    othersCorrect++;
+                }
             }
             seenWords.add(currentWord);
             showWord();
         }
 
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        function startTimer() {
+            document.getElementById('timer').innerText = timeLeft;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            if (timeLeft <= 0) {
+                document.getElementById('word-box').innerText = "Time's up!";
             }
+            document.getElementById('seen-btn').style.display = 'none';
+            document.getElementById('new-btn').style.display = 'none';
+            document.getElementById('result').innerText = "Group A: " + foodCorrect + " / " + foodDisplayed + ", Group B: " + othersCorrect + " / " + othersDisplayed;
+            document.getElementById('result').style.display = 'block';
         }
     </script>
 </body>
