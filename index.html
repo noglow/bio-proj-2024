@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Are you an idiot?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #word-box {
+            font-size: 24px;
+            margin: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+        }
+        .score {
+            font-size: 24px;
+            margin: 20px;
+        }
+        .word-count {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Are you an idiot?</h1>
+    <button id="start-btn" onclick="start()">Start</button>
+    <div id="word-box"></div>
+    <button id="seen-btn" onclick="seenWord()" style="display:none;">Seen</button>
+    <button id="new-btn" onclick="newWord()" style="display:none;">New</button>
+    <div class="score">Score: <span id="score">0</span></div>
+    <div class="word-count" id="word-count">Words displayed: 0</div>
+    <div id="result" style="display:none;"></div>
+
+    <script>
+        let foodWords = [];
+        let otherWords = [];
+        let allWords = [];
+        let seenWords = new Set();
+        let currentWord = '';
+        let score = 0;
+        let foodRight = 0;
+        let othersRight = 0;
+        let wordsDisplayed = 0;
+        let foodDisplayed = 0;
+        let othersDisplayed = 0;
+
+        // Permanent word banks
+        const permanentFoodWords = ["Tacos", "Burgers", "Fries", "Tempura", "Barbecue", "Sandwich", "Pancakes", "Waffles", "Sushi", "Ramen", "Burrito", "Pasta", "Pizza", "Pudding", "Curry", "Skewers", "Soup", "Bread", "Hotpot", "Watermelon"];
+        const permanentOtherWords = ["Chair", "Table", "Pen", "Board", "Socket", "Glasses", "Shoes", "Clock", "Backpack", "Fan", "Toy", "Computer", "Phone", "Switch", "Lights", "Door", "Wall", "Cotton", "Fishtank", "Refrigerator", "Jump", "Run", "Eat", "Sleep", "Walk", "Playing", "Think", "Reading", "Listening", "Watch", "Multitask", "Hop", "Pushing", "Pull", "Crouching", "Swim", "Mopping", "Birdwatching", "Slap", "Punch", "Paris", "Sydney", "Melbourne", "Malibu", "Arkansas", "Classroom", "School", "Store", "Restaurant", "Berlin", "Bathroom", "Palace", "Room", "Theater", "Park", "Playground", "Beach", "Rooftop", "Hawaii", "Aviary","Hippo", "Lion", "Wolf", "Fox", "Dolphin", "Shark", "Turtle", "Hyena", "Toucans", "Tiger", "Sloth", "Panda", "Snake", "Lizards", "Panther", "Beaver", "Chameleon", "Raccoon", "Giraffe", "Elephant"
+];
+
+        function start() {
+            foodWords = [...permanentFoodWords];
+            otherWords = [...permanentOtherWords];
+            allWords = [...foodWords, ...otherWords];
+            seenWords.clear();
+            score = 0;
+            wordsDisplayed = 0;
+            foodDisplayed = 0;
+            othersDisplayed = 0;
+            document.getElementById('score').innerText = score;
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('word-count').innerText = "Words displayed: 0";
+            document.getElementById('seen-btn').style.display = 'inline-block';
+            document.getElementById('new-btn').style.display = 'inline-block';
+            showWord();
+        }
+
+        function showWord() {
+            if (wordsDisplayed < 200) {
+                wordsDisplayed++;
+                document.getElementById('word-count').innerText = "Words displayed: " + wordsDisplayed;
+                currentWord = allWords[Math.floor(Math.random() * allWords.length)];
+                document.getElementById('word-box').innerText = currentWord;
+            } else {
+                document.getElementById('word-box').innerText = "No more words!";
+                document.getElementById('seen-btn').style.display = 'none';
+                document.getElementById('new-btn').style.display = 'none';
+                document.getElementById('result').innerText = "Food: " + foodRight + " / " + foodDisplayed + ", Others: " + othersRight + " / " + othersDisplayed;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+
+        function seenWord() {
+            if (permanentFoodWords.includes(currentWord)) {
+                foodDisplayed++;
+            } else if (permanentOtherWords.includes(currentWord)) {
+                othersDisplayed++;
+            }
+
+            if (seenWords.has(currentWord)) {
+                score++;
+                document.getElementById('score').innerText = score;
+                if (permanentFoodWords.includes(currentWord)) {
+                    foodRight++;
+                } else if (permanentOtherWords.includes(currentWord)) {
+                    othersRight++;
+                }
+            }
+            seenWords.add(currentWord);
+            showWord();
+        }
+
+        function newWord() {
+            if (permanentFoodWords.includes(currentWord)) {
+                foodDisplayed++;
+            } else if (permanentOtherWords.includes(currentWord)) {
+                othersDisplayed++;
+            }
+            seenWords.add(currentWord);
+            showWord();
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+    </script>
+</body>
+</html>
